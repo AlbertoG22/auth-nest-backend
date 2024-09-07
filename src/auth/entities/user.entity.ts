@@ -1,4 +1,4 @@
-import { Prop, Schema } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema()
 export class User {
@@ -18,3 +18,5 @@ export class User {
   @Prop({ type: [String], default: ['user'] })
   roles: string[];
 }
+
+export const UserSchema = SchemaFactory.createForClass( User );
