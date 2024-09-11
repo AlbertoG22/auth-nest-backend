@@ -26,7 +26,10 @@ export class AuthService {
       });
 
       // 2. Guardar el usuario
-      return newUser.save();
+      await newUser.save();
+
+      const { password:_, ...user } = newUser.toJSON();
+      return user;
       
     } catch(error) {
       if( error.code === 11000 ) {
