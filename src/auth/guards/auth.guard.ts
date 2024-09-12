@@ -1,6 +1,6 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Observable } from 'rxjs';
+import { JwtPayload } from '../interfaces/jwt-payload';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -9,11 +9,24 @@ export class AuthGuard implements CanActivate {
     private jwtService: JwtService
   ) {}
 
-  canActivate( context: ExecutionContext ): Promise<boolean> {
+  async canActivate( context: ExecutionContext ): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader( request );
 
-    console.log({ token });
+    if( !token ) {
+      throw new UnauthorizedException('No bearer token found!');
+    }
+
+    try {
+      const payload = await this.jwtService.verifyAsync<JwtPayload>(
+        token, { secret: process.env.JWT_SEED }
+      );
+      console.log({ payload });
+  
+      request['user'] = payload;
+    } catch(error) {
+      throw new UnauthorizedException();
+    }
     
     return Promise.resolve(true);
   }
